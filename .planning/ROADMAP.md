@@ -25,7 +25,8 @@
   5. Free users can access the platform with basic API quota and ad-supported credit earning
   6. Different membership tiers enforce different API rate limits
   7. Admins can manually add credits to any user account
-**Plans**: TBD
+**Plans**: 1 plan
+- [ ] 01-01-PLAN.md -- Foundation: schema extensions, membership service, admin recharge
 
 ### Phase 2: Payment Integration
 **Goal**: Users can purchase credits via Stripe, WeChat Pay, and Alipay
@@ -67,7 +68,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/7 | Not started | - |
+| 1. Foundation | 0/1 | Not started | - |
 | 2. Payment Integration | 0/5 | Not started | - |
 | 3. Ad Reward System | 0/4 | Not started | - |
 | 4. Membership UI | 0/5 | Not started | - |
