@@ -43,6 +43,14 @@ export const health = () => `${BASE_URL}/health`;
 export const user = () => `${BASE_URL}/api/user`;
 
 export const balance = () => `${BASE_URL}/api/balance`;
+export const balanceTransactions = () => `${BASE_URL}/api/balance/transactions`;
+
+export const paymentPackages = () => `${BASE_URL}/api/payment/packages`;
+export const paymentCheckout = () => `${BASE_URL}/api/payment/checkout`;
+
+export const adsStatus = () => `${BASE_URL}/api/ads/status`;
+export const adsReward = () => `${BASE_URL}/api/ads/reward`;
+export const adsComplete = () => `${BASE_URL}/api/ads/complete`;
 
 export const userPlugins = () => `${BASE_URL}/api/user/plugins`;
 

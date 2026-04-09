@@ -123,6 +123,22 @@ export function getUserBalance(): Promise<t.TBalanceResponse> {
   return request.get(endpoints.balance());
 }
 
+export function getPaymentPackages() {
+  return request.get(endpoints.paymentPackages());
+}
+
+export function createPaymentCheckout(packageId: string) {
+  return request.post(endpoints.paymentCheckout(), { packageId });
+}
+
+export function getAdsStatus() {
+  return request.get(endpoints.adsStatus());
+}
+
+export function completeAdReward(adId: string) {
+  return request.post(endpoints.adsComplete(), { adId });
+}
+
 export const updateTokenCount = (text: string) => {
   return request.post(endpoints.tokenizer(), { arg: text });
 };
