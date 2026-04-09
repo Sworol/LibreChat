@@ -1,4 +1,4 @@
-const { findBalanceByUser } = require('~/models');
+const { findBalanceByUser, getTransactions } = require('~/models');
 
 async function balanceController(req, res) {
   const balanceData = await findBalanceByUser(req.user.id);
@@ -19,4 +19,18 @@ async function balanceController(req, res) {
   res.status(200).json(result);
 }
 
+async function transactionsController(req, res) {
+  try {
+    const { limit = '50', offset = '0' } = req.query;
+    const transactions = await getTransactions(
+      { user: req.user.id },
+      { limit: parseInt(limit, 10), offset: parseInt(offset, 10), sort: { createdAt: -1 } }
+    );
+    res.status(200).json({ transactions });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get transactions' });
+  }
+}
+
 module.exports = balanceController;
+module.exports.transactions = transactionsController;

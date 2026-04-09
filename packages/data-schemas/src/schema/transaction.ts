@@ -4,9 +4,9 @@ import mongoose, { Schema, Document, Types } from 'mongoose';
 export interface ITransaction extends Document {
   user: Types.ObjectId;
   conversationId?: string;
-  tokenType: 'prompt' | 'completion' | 'credits';
+  tokenType: 'prompt' | 'completion' | 'credits' | 'recharge' | 'refund';
   model?: string;
-  context?: string;
+  context?: 'default' | 'partial' | 'auto_retry' | 'manual_recharge' | 'refund' | 'ad_reward';
   valueKey?: string;
   rate?: number;
   rawAmount?: number;
@@ -15,6 +15,10 @@ export interface ITransaction extends Document {
   writeTokens?: number;
   readTokens?: number;
   messageId?: string;
+  /** External payment reference for recharge transactions */
+  paymentId?: string;
+  /** Admin user id for manual recharge */
+  adminId?: string;
   createdAt?: Date;
   updatedAt?: Date;
   tenantId?: string;
@@ -35,7 +39,7 @@ const transactionSchema: Schema<ITransaction> = new Schema(
     },
     tokenType: {
       type: String,
-      enum: ['prompt', 'completion', 'credits'],
+      enum: ['prompt', 'completion', 'credits', 'recharge', 'refund'],
       required: true,
     },
     model: {
@@ -44,6 +48,7 @@ const transactionSchema: Schema<ITransaction> = new Schema(
     },
     context: {
       type: String,
+      enum: ['default', 'partial', 'auto_retry', 'manual_recharge', 'refund', 'ad_reward'],
     },
     valueKey: {
       type: String,
@@ -55,6 +60,8 @@ const transactionSchema: Schema<ITransaction> = new Schema(
     writeTokens: { type: Number },
     readTokens: { type: Number },
     messageId: { type: String },
+    paymentId: { type: String },
+    adminId: { type: String },
     tenantId: {
       type: String,
       index: true,

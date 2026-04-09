@@ -51,6 +51,12 @@ export interface IUser extends Document {
   /** Field for external source identification (for consistency with TPrincipal schema) */
   idOnTheSource?: string;
   tenantId?: string;
+  /** Membership tier for monetization */
+  membership?: {
+    tier?: 'free' | 'basic' | 'pro' | 'enterprise';
+    expiryDate?: Date | null;
+    features?: string[];
+  };
   federatedTokens?: OIDCTokens;
   openidTokens?: OIDCTokens;
 }

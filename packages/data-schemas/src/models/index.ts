@@ -28,6 +28,7 @@ import { createAclEntryModel } from './aclEntry';
 import { createSystemGrantModel } from './systemGrant';
 import { createGroupModel } from './group';
 import { createConfigModel } from './config';
+import { createMembershipPlanModel } from './membership';
 
 /**
  * Creates all database models for all collections
@@ -64,5 +65,6 @@ export function createModels(mongoose: typeof import('mongoose')) {
     SystemGrant: createSystemGrantModel(mongoose),
     Group: createGroupModel(mongoose),
     Config: createConfigModel(mongoose),
+    MembershipPlan: createMembershipPlanModel(mongoose),
   };
 }

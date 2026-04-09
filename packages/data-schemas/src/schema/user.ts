@@ -153,6 +153,25 @@ const userSchema = new Schema<IUser>(
       type: String,
       index: true,
     },
+    /** Membership tier for monetization */
+    membership: {
+      type: {
+        tier: {
+          type: String,
+          enum: ['free', 'basic', 'pro', 'enterprise'],
+          default: 'free',
+        },
+        expiryDate: {
+          type: Date,
+          default: null,
+        },
+        features: {
+          type: [String],
+          default: [],
+        },
+      },
+      default: { tier: 'free', expiryDate: null, features: [] },
+    },
   },
   { timestamps: true },
 );
