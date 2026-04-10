@@ -85,24 +85,57 @@ export async function grantAdCredits(userId: string, adId: string): Promise<{
   newBalance: number;
   error?: string;
 }> {
-  // Validate adId first
-  const adValidation = validateAdId(adId, userId);
-  if (!adValidation.valid) {
-    logger.warn(`[Ads] Ad reward denied for user ${userId}: ${adValidation.reason}`);
-    return { success: false, credits: 0, newBalance: 0, error: adValidation.reason };
-  }
-
-  // Check rate limiting
-  const { canWatch, reason } = await canWatchAd(userId);
-  if (!canWatch) {
-    logger.warn(`[Ads] Ad reward denied for user ${userId}: ${reason}`);
-    return { success: false, credits: 0, newBalance: 0, error: reason };
-  }
-
-  // Use MongoDB transaction for atomicity
+  // Use MongoDB transaction for atomicity - all validation must be inside
   const mongoSession = await mongoose.startSession();
   try {
     mongoSession.startTransaction();
+
+    // Basic adId validation inside transaction
+    if (!adId || typeof adId !== 'string' || !adId.startsWith('ad_')) {
+      await mongoSession.abortTransaction();
+      return { success: false, credits: 0, newBalance: 0, error: 'Invalid adId format' };
+    }
+
+    // Check if already redeemed (within transaction for atomicity)
+    const alreadyUsed = adWatchHistory.some(
+      (r) => r.userId === userId && r.adId === adId,
+    );
+    if (alreadyUsed) {
+      await mongoSession.abortTransaction();
+      return { success: false, credits: 0, newBalance: 0, error: 'Ad already redeemed' };
+    }
+
+    // Check rate limiting (within transaction)
+    const now = new Date();
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+
+    const todayWatches = adWatchHistory.filter(
+      (r) => r.userId === userId && r.watchedAt >= todayStart,
+    ).length;
+
+    if (todayWatches >= AD_CONFIG.maxWatchesPerDay) {
+      await mongoSession.abortTransaction();
+      return { success: false, credits: 0, newBalance: 0, error: 'Daily limit reached' };
+    }
+
+    // Check cooldown
+    const lastWatch = adWatchHistory
+      .filter((r) => r.userId === userId)
+      .sort((a, b) => b.watchedAt.getTime() - a.watchedAt.getTime())[0];
+
+    if (lastWatch) {
+      const secondsSinceLastWatch = (now.getTime() - lastWatch.watchedAt.getTime()) / 1000;
+      if (secondsSinceLastWatch < AD_CONFIG.cooldownSeconds) {
+        await mongoSession.abortTransaction();
+        return {
+          success: false,
+          credits: 0,
+          newBalance: 0,
+          error: `Cooldown active, try again in ${Math.ceil(AD_CONFIG.cooldownSeconds - secondsSinceLastWatch)} seconds`,
+        };
+      }
+    }
 
     const Transaction = mongoose.models.Transaction;
     const transaction = new Transaction({
