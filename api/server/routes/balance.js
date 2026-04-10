@@ -91,7 +91,7 @@ router.get('/admin/:userId/transactions', requireJwtAuth, requireAdminAccess, as
 
     const transactions = await db.getTransactions(
       { user: userId },
-      { limit: parseInt(limit, 10), offset: parseInt(offset, 10), sort: { createdAt: -1 } }
+      { limit: parseInt(limit, 10), offset: parseInt(offset, 10), sort: { createdAt: -1 } },
     );
 
     return res.status(200).json({ transactions });

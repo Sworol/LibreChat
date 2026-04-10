@@ -10,7 +10,9 @@ const db = require('~/models');
  * Returns null if invalid to prevent NaN corruption.
  */
 function parseCredits(creditsStr) {
-  if (!creditsStr) { return null; }
+  if (!creditsStr) {
+    return null;
+  }
   const parsed = parseInt(creditsStr, 10);
   if (isNaN(parsed) || parsed <= 0) {
     logger.error(`[Stripe Webhook] Invalid credits value: "${creditsStr}"`);
@@ -26,11 +28,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(
-      req.body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET,
-    );
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
     logger.error('[Stripe Webhook] Signature verification failed:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -68,7 +66,9 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         mongoSession.startTransaction();
 
         // Idempotency check within transaction
-        const existingTx = await db.Transaction.findOne({ paymentId: session.id }).session(mongoSession);
+        const existingTx = await db.Transaction.findOne({ paymentId: session.id }).session(
+          mongoSession,
+        );
         if (existingTx) {
           await mongoSession.abortTransaction();
           logger.warn('[Stripe Webhook] Duplicate session ignored:', session.id);
