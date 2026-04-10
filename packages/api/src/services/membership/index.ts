@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import type { Model, Types } from 'mongoose';
-import type { IUser } from 'librechat-data-provider';
+import type { TUser } from 'librechat-data-provider';
 import type { IMembershipPlan } from '@librechat/data-schemas';
 
 /** Membership tier type */
@@ -30,8 +30,8 @@ export const DEFAULT_FREE_PLAN = {
  * Get the user's current membership tier
  */
 export async function getMembershipTier(userId: string): Promise<MembershipTier> {
-  const User = mongoose.models.User as Model<IUser> & {
-    findById: (id: string) => Promise<IUser | null>;
+  const User = mongoose.models.User as Model<TUser> & {
+    findById: (id: string) => Promise<TUser | null>;
   };
   const user = await User.findById(userId).select('membership.tier').lean();
   return (user?.membership?.tier as MembershipTier) ?? 'free';
@@ -62,8 +62,8 @@ export async function getMembershipStatus(userId: string): Promise<{
  * Check if a user's membership is active (not expired)
  */
 export async function isMembershipActive(userId: string): Promise<boolean> {
-  const User = mongoose.models.User as Model<IUser> & {
-    findById: (id: string) => Promise<IUser | null>;
+  const User = mongoose.models.User as Model<TUser> & {
+    findById: (id: string) => Promise<TUser | null>;
   };
   const user = await User.findById(userId).select('membership.expiryDate').lean();
   if (!user?.membership?.expiryDate) {
@@ -154,7 +154,7 @@ export async function updateUserMembership(
   tier: MembershipTier,
   expiryDate?: Date,
 ): Promise<void> {
-  const User = mongoose.models.User as Model<IUser>;
+  const User = mongoose.models.User as Model<TUser>;
   await User.findByIdAndUpdate(userId, {
     'membership.tier': tier,
     'membership.expiryDate': expiryDate ?? null,
