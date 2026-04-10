@@ -46,10 +46,11 @@ router.post('/complete', requireJwtAuth, async (req, res) => {
       return res.status(400).json({ error: 'adId is required' });
     }
 
-    const result = await grantAdCredits(req.user.id);
+    const result = await grantAdCredits(req.user.id, adId);
 
     if (!result.success) {
-      return res.status(429).json({ error: 'Cannot grant credits', reason: 'Rate limited' });
+      const statusCode = result.error === 'Ad already redeemed' ? 409 : 429;
+      return res.status(statusCode).json({ error: result.error || 'Cannot grant credits' });
     }
 
     res.json({

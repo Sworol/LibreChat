@@ -99,7 +99,7 @@ export const keys = () => keysEndpoint;
 
 export const userKeyQuery = (name: string) => `${keysEndpoint}?name=${name}`;
 
-export const revokeUserKey = (name: string) => `${keysEndpoint}/${name}`;
+export const revokeUserKey = (name: string) => `${keysEndpoint}/${encodeURIComponent(name)}`;
 
 export const revokeAllUserKeys = () => `${keysEndpoint}?all=true`;
 
