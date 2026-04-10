@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const controller = require('../controllers/Balance');
 const { requireJwtAuth } = require('../middleware/');
 const { SystemCapabilities } = require('@librechat/data-schemas');
@@ -11,14 +12,24 @@ const requireAdminAccess = requireCapability(SystemCapabilities.ACCESS_ADMIN);
 
 // POST /api/balance/admin/add - Admin manually adds credits to a user
 router.post('/admin/add', requireJwtAuth, requireAdminAccess, async (req, res) => {
+  const { userId, amount, reason } = req.body;
+
+  if (!userId || typeof amount !== 'number' || amount <= 0) {
+    return res.status(400).json({ error: 'Invalid userId or amount' });
+  }
+
+  const adminId = req.user.id;
+
+  // Validate user exists
+  const userExists = await mongoose.models.User.findById(userId).lean();
+  if (!userExists) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  // Use MongoDB transaction for atomicity
+  const mongoSession = await mongoose.startSession();
   try {
-    const { userId, amount, reason } = req.body;
-
-    if (!userId || typeof amount !== 'number' || amount <= 0) {
-      return res.status(400).json({ error: 'Invalid userId or amount' });
-    }
-
-    const adminId = req.user.id;
+    mongoSession.startTransaction();
 
     // Create a recharge transaction
     const Transaction = db.Transaction;
@@ -29,18 +40,17 @@ router.post('/admin/add', requireJwtAuth, requireAdminAccess, async (req, res) =
       rawAmount: amount,
       adminId,
     });
-
-    // Calculate token value (rate = 1 for manual recharge)
     transaction.tokenValue = amount;
     transaction.rate = 1;
+    await transaction.save({ session: mongoSession });
 
-    await transaction.save();
-
-    // Update balance
+    // Update balance atomically within transaction
     const balance = await db.updateBalance({
       user: userId,
       incrementValue: amount,
     });
+
+    await mongoSession.commitTransaction();
 
     logger.info(`[AdminBalance] Admin ${adminId} added ${amount} credits to user ${userId}`);
 
@@ -50,8 +60,11 @@ router.post('/admin/add', requireJwtAuth, requireAdminAccess, async (req, res) =
       message: `Added ${amount} credits to user`,
     });
   } catch (error) {
+    await mongoSession.abortTransaction();
     logger.error('[AdminBalance] addCreditsAdmin error:', error);
     return res.status(500).json({ error: 'Failed to add credits' });
+  } finally {
+    mongoSession.endSession();
   }
 });
 
