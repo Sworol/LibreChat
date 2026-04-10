@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { requireJwtAuth } = require('~/server/middleware');
-const { canWatchAd, grantAdCredits, getAdStatus, AD_CONFIG } = require('@librechat/api');
+const { canWatchAd, grantAdCredits, getAdStatus } = require('@librechat/api');
 const { logger } = require('~/config/logger');
 
 // GET /api/ads/status - Check if user can watch an ad
