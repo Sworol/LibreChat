@@ -1,37 +1,40 @@
 ---
-status: issues
+status: fixed
 files_reviewed: 3
-critical: 5
+critical: 5 (all fixed)
 warning: 4
 info: 3
 total: 12
+fixed_by: 8074678d0
 ---
 
 ## Phase 2 Payment Integration Review
 
-### CRITICAL
+> ⚠️ **NOTE:** All critical issues have been fixed in commit `8074678d0`
 
-**1. Race Condition in Idempotency Check**
+### CRITICAL (FIXED)
+
+~~**1. Race Condition in Idempotency Check**~~ ✅ Fixed
 - **File**: `api/server/routes/stripe-webhook.js`
 - **Lines**: 36-40
 - **Description**: The idempotency check (`getTransactions` followed by `save`) is non-atomic. Two concurrent webhooks with the same `paymentId` can both pass the check and execute, resulting in duplicate credits. A database-level unique constraint on `paymentId` is needed.
 
-**2. Non-Atomic Transaction Operations**
+~~**2. Non-Atomic Transaction Operations**~~ ✅ Fixed
 - **File**: `api/server/routes/stripe-webhook.js`
 - **Lines**: 43-59
 - **Description**: `transaction.save()` and `db.updateBalance()` are separate operations without a transaction wrapper. If balance update fails after transaction save, data inconsistency occurs (transaction exists but balance not updated, or vice versa). These must be wrapped in a database transaction.
 
-**3. No User Existence Validation**
+~~**3. No User Existence Validation**~~ ✅ Fixed
 - **File**: `api/server/routes/stripe-webhook.js`
 - **Lines**: 28-33, 55-59
 - **Description**: The webhook trusts `userId` from Stripe metadata without verifying the user exists in the database. Malicious or erroneous metadata could credit non-existent users or cause integrity issues.
 
-**4. Webhook Returns Success Before Processing Completes**
+~~**4. Webhook Returns Success Before Processing Completes**~~ ✅ Fixed
 - **File**: `api/server/routes/stripe-webhook.js`
 - **Line**: 75
 - **Description**: `res.json({ received: true })` is sent after queuing async operations but before they complete. Stripe may retry the webhook while prior execution is still in progress, causing duplicate processing.
 
-**5. Type Coercion Without Validation**
+~~**5. Type Coercion Without Validation**~~ ✅ Fixed
 - **File**: `api/server/routes/stripe-webhook.js`
 - **Lines**: 48, 51, 58
 - **Description**: `parseInt(credits, 10)` is called 3 times on the same value without checking for `NaN`. If Stripe metadata is tampered with or malformed, `NaN` values could be saved to the database, corrupting credit balances.

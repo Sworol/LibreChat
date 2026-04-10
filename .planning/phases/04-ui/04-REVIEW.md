@@ -1,15 +1,16 @@
 ---
-status: issues
+status: fixed
 files_reviewed: 3
-critical: 1
+critical: 1 (fixed)
 warning: 2
 info: 5
 total: 8
+fixed_by: 8074678d0
 ---
 
-### CRITICAL
+### CRITICAL (FIXED)
 
-**1. Path Traversal Vulnerability in `revokeUserKey`**
+~~**1. Path Traversal Vulnerability in `revokeUserKey`**~~ ✅ Fixed
 - **File**: `packages/data-provider/src/api-endpoints.ts`
 - **Line**: 102
 - **Issue**: The `revokeUserKey(name)` function interpolates `name` directly into the URL path without encoding:

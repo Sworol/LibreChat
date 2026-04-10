@@ -1,23 +1,26 @@
 ---
-status: issues
+status: fixed
 files_reviewed: 2
-critical: 2
+critical: 2 (all fixed)
 warning: 5
 info: 5
 total: 12
+fixed_by: 8074678d0, 3b52b6026
 ---
 
 ## Phase 3 (Ad Reward System) Code Review
 
-### CRITICAL
+> ⚠️ **NOTE:** All critical issues have been fixed in commits `8074678d0` and `3b52b6026`
 
-1. **[reward.ts:65-80] Ad completion can be triggered without watching an ad (Ad Fraud)**
+### CRITICAL (FIXED)
+
+~~1. **[reward.ts:65-80] Ad completion can be triggered without watching an ad (Ad Fraud)**~~ ✅ Fixed
    - `grantAdCredits()` accepts no `adId` parameter and performs no verification that an ad was actually watched
    - The `/complete` endpoint in `ads.js` receives `adId` from the client but never passes it for verification
    - This allows users to spam the endpoint and earn unlimited credits without watching any ads
    - **Fix**: Require and validate `adId` in `grantAdCredits`, implement server-side ad verification
 
-2. **[reward.ts:60-99] Race condition enables bypassing rate limits**
+~~2. **[reward.ts:60-99] Race condition enables bypassing rate limits**~~ ✅ Fixed
    - `canWatchAd()` check and `adWatchHistory.push()` in `grantAdCredits()` are not atomic
    - Multiple concurrent requests can pass `canWatchAd()` before any history entry is recorded
    - An attacker can exceed `maxWatchesPerDay` by sending parallel requests
